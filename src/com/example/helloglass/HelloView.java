@@ -21,115 +21,81 @@ import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 /**
  * View used to draw a running timer.
  */
 public class HelloView extends FrameLayout {
 
-    /**
-     * Interface to listen for changes on the view layout.
-     */
-    public interface ChangeListener {
-        /** Notified of a change in the view. */
-        public void onChange();
-    }
+	/**
+	 * Interface to listen for changes on the view layout.
+	 */
+	public interface ChangeListener {
+		/** Notified of a change in the view. */
+		public void onChange();
+	}
 
-    // Visible for testing.
-    static final long DELAY_MILLIS = 1000;
+	private final Handler mHandler = new Handler();
 
-    private final Handler mHandler = new Handler();
-    private final Runnable mUpdateTextRunnable = new Runnable() {
+	private ChangeListener mChangeListener;
 
-        @Override
-        public void run() {
-            if (mRunning) {
-                postDelayed(mUpdateTextRunnable, DELAY_MILLIS);
-                updateText();
-            }
-        }
-    };
+	private TextView sampleTextview;
 
-//    private final Timer mTimer;
-//    private final Timer.TimerListener mTimerListener = new Timer.TimerListener() {
-//
-//        @Override
-//        public void onStart() {
-//            mRunning = true;
-//            long delayMillis = Math.abs(mTimer.getRemainingTimeMillis()) % DELAY_MILLIS;
-//            if (delayMillis == 0) {
-//                delayMillis = DELAY_MILLIS;
-//            }
-//            postDelayed(mUpdateTextRunnable, delayMillis);
-//        }
-//
-//        @Override
-//        public void onPause() {
-//            mRunning = false;
-//            removeCallbacks(mUpdateTextRunnable);
-//        }
-//
-//        @Override
-//        public void onReset() {
-//            mTipView.setVisibility(View.INVISIBLE);
-//            updateText(mTimer.getRemainingTimeMillis(), mWhiteColor);
-//        }
-//    };
+	public HelloView(Context context) {
+		this(context, null, 0);
+	}
 
-    private boolean mRunning;
+	public HelloView(Context context, AttributeSet attrs) {
+		this(context, attrs, 0);
 
-    private ChangeListener mChangeListener;
+	}
 
-    public HelloView(Context context) {
-        this(context, null, 0);
-    }
+	public HelloView(Context context, AttributeSet attrs, int style) {
+		super(context, attrs, style);
 
-    public HelloView(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-        
+		LayoutInflater.from(context).inflate(R.layout.card_main, this);
+		sampleTextview = (TextView) findViewById(R.id.sample_txt);
+		updateText();
+	}
 
-    }
+	/**
+	 * Sets a {@link ChangeListener}.
+	 */
+	public void setListener(ChangeListener listener) {
+		mChangeListener = listener;
+	}
 
-    public HelloView(Context context, AttributeSet attrs, int style) {
-        super(context, attrs, style);
-        
-        LayoutInflater.from(context).inflate(R.layout.card_main, this);
-        updateText();
-    }
+	/**
+	 * Returns the set {@link ChangeListener}.
+	 */
+	public ChangeListener getListener() {
+		return mChangeListener;
+	}
 
-    /**
-     * Sets a {@link ChangeListener}.
-     */
-    public void setListener(ChangeListener listener) {
-        mChangeListener = listener;
-    }
+	@Override
+	public boolean postDelayed(Runnable action, long delayMillis) {
+		return mHandler.postDelayed(action, delayMillis);
+	}
 
-    /**
-     * Returns the set {@link ChangeListener}.
-     */
-    public ChangeListener getListener() {
-        return mChangeListener;
-    }
+	@Override
+	public boolean removeCallbacks(Runnable action) {
+		mHandler.removeCallbacks(action);
+		return true;
+	}
 
-    @Override
-    public boolean postDelayed(Runnable action, long delayMillis) {
-        return mHandler.postDelayed(action, delayMillis);
-    }
+	/**
+	 * Updates the text from the Timer's value, overridable for testing.
+	 */
+	protected void updateText() {
+		if (mChangeListener != null) {
+			mChangeListener.onChange();
+		}
+	}
 
-    @Override
-    public boolean removeCallbacks(Runnable action) {
-        mHandler.removeCallbacks(action);
-        return true;
-    }
-
-    /**
-     * Updates the text from the Timer's value, overridable for testing.
-     */
-    protected void updateText() {
-//    	mHoursView.setText("test");
-        if (mChangeListener != null) {
-            mChangeListener.onChange();
-        }
-    }
+	public void changeText(String text) {
+		sampleTextview.setText(text);
+		updateText();
+	}
 
 }
